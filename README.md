@@ -1,4 +1,4 @@
-# NewFinTech HRMS System - Architecture Documentation
+# NewFinTech HRMS Documentation
 
 **Version:** 1.0  
 **Date:** November 24, 2025  
