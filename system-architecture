@@ -1,0 +1,124 @@
+graph TB
+    subgraph "Client Layer"
+        WEB[Web Application<br/>React SPA]
+        ANDROID[Android App<br/>Flutter]
+        IOS[iOS App<br/>Flutter]
+        API_CLIENT[Third-Party<br/>API Clients]
+    end
+
+    subgraph "CDN & Load Balancing"
+        CDN[CloudFront CDN<br/>Static Assets]
+        ALB[Application Load Balancer<br/>SSL Termination]
+    end
+
+    subgraph "API Gateway Layer"
+        APIGW[API Gateway<br/>Kong/AWS API Gateway]
+        AUTH[Authentication Service<br/>JWT + OAuth2]
+        RATE[Rate Limiter]
+    end
+
+    subgraph "Application Layer - Microservices"
+        EMP_SVC[Employee Service<br/>Node.js/Express]
+        PAY_SVC[Payroll Service<br/>Node.js/Express]
+        LEAVE_SVC[Leave Service<br/>Node.js/Express]
+        TENANT_SVC[Tenant Service<br/>Node.js/Express]
+        NOTIF_SVC[Notification Service<br/>Node.js/Express]
+        LICENSE_SVC[License Service<br/>Node.js/Express]
+        REPORT_SVC[Report Service<br/>Node.js/Express]
+    end
+
+    subgraph "Data Layer"
+        CACHE[(Redis Cache<br/>Session & Data)]
+        PRIMARY_DB[(PostgreSQL Primary<br/>Multi-tenant DB)]
+        REPLICA_DB[(PostgreSQL Replica<br/>Read Operations)]
+        S3[S3 Storage<br/>Documents & Files]
+    end
+
+    subgraph "Message Queue & Background Jobs"
+        MQ[RabbitMQ<br/>Message Queue]
+        WORKER[Background Workers<br/>Async Processing]
+    end
+
+    subgraph "External Services"
+        EMAIL[Email Service<br/>AWS SES]
+        SMS[SMS Service<br/>AWS SNS]
+        PDF[PDF Generator<br/>Puppeteer]
+        PUSH[Push Notification<br/>FCM/APNs]
+    end
+
+    subgraph "Monitoring & Logging"
+        MONITOR[CloudWatch/Prometheus<br/>Metrics]
+        LOGS[CloudWatch Logs<br/>Centralized Logging]
+        ALERT[AlertManager<br/>Alerts]
+    end
+
+    WEB --> CDN
+    WEB --> ALB
+    ANDROID --> ALB
+    IOS --> ALB
+    API_CLIENT --> ALB
+    
+    CDN --> ALB
+    ALB --> APIGW
+    
+    APIGW --> AUTH
+    APIGW --> RATE
+    AUTH --> CACHE
+    
+    APIGW --> EMP_SVC
+    APIGW --> PAY_SVC
+    APIGW --> LEAVE_SVC
+    APIGW --> TENANT_SVC
+    APIGW --> NOTIF_SVC
+    APIGW --> LICENSE_SVC
+    APIGW --> REPORT_SVC
+    
+    EMP_SVC --> CACHE
+    PAY_SVC --> CACHE
+    LEAVE_SVC --> CACHE
+    TENANT_SVC --> CACHE
+    LICENSE_SVC --> CACHE
+    
+    EMP_SVC --> PRIMARY_DB
+    PAY_SVC --> PRIMARY_DB
+    LEAVE_SVC --> PRIMARY_DB
+    TENANT_SVC --> PRIMARY_DB
+    LICENSE_SVC --> PRIMARY_DB
+    
+    REPORT_SVC --> REPLICA_DB
+    
+    EMP_SVC --> S3
+    PAY_SVC --> S3
+    
+    EMP_SVC --> MQ
+    PAY_SVC --> MQ
+    LEAVE_SVC --> MQ
+    NOTIF_SVC --> MQ
+    
+    MQ --> WORKER
+    
+    WORKER --> EMAIL
+    WORKER --> SMS
+    WORKER --> PDF
+    WORKER --> PUSH
+    WORKER --> PRIMARY_DB
+    
+    PRIMARY_DB -.Replication.-> REPLICA_DB
+    
+    EMP_SVC --> MONITOR
+    PAY_SVC --> MONITOR
+    LEAVE_SVC --> MONITOR
+    TENANT_SVC --> MONITOR
+    NOTIF_SVC --> MONITOR
+    LICENSE_SVC --> MONITOR
+    REPORT_SVC --> MONITOR
+    
+    EMP_SVC --> LOGS
+    PAY_SVC --> LOGS
+    LEAVE_SVC --> LOGS
+    TENANT_SVC --> LOGS
+    NOTIF_SVC --> LOGS
+    LICENSE_SVC --> LOGS
+    REPORT_SVC --> LOGS
+    
+    MONITOR --> ALERT
